@@ -112,6 +112,7 @@ def display_mp3_files(mp3_files, focused_index, selected_index, input_folder_pat
     
     print("\nUse up/down arrow keys to navigate, Enter to select/deselect, 'q' to quit\r")
     print("When an item is selected, up/down arrows will reorder it in the list\r")
+    print("Press 'd' to delete the selected item\r")
     print("Press 'c' to combine files in the current order\r")
     sys.stdout.flush()
 
@@ -199,6 +200,37 @@ if __name__ == "__main__":
                 else:
                     # An item is already selected, so deselect it
                     selected_index = None
+            
+            # Check for delete command
+            elif char == 'd':
+                if selected_index is not None:
+                    # Store the name of the file being deleted for confirmation
+                    deleted_file = mp3_files[selected_index]
+                    
+                    # Delete the selected file from the list
+                    del mp3_files[selected_index]
+                    
+                    # Check if the list is now empty
+                    if not mp3_files:
+                        # Restore terminal settings for proper output
+                        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, original_settings)
+                        clear_screen()
+                        print(f"Deleted: {deleted_file}")
+                        print("No MP3 files left in the list. Exiting.")
+                        sys.exit(0)
+                    
+                    # Adjust the focused_index if it's now out of bounds
+                    if focused_index >= len(mp3_files):
+                        focused_index = len(mp3_files) - 1
+                    
+                    # Reset the selection
+                    selected_index = None
+                    
+                    # Force screen refresh with updated list
+                    clear_screen()
+                    display_mp3_files(mp3_files, focused_index, selected_index, input_folder_path, output_file_path)
+                    print(f"Deleted: {deleted_file}\r")
+                    sys.stdout.flush()
             
             # Check for combine command
             elif char == 'c':
